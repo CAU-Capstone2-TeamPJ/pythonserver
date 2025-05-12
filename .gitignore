@@ -10,3 +10,4 @@ env/
 # Large files
 *.dll
 *.lib
+Lib/

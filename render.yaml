@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: movie-fastapi
+    env: python
+    buildCommand: ""
+    startCommand: ./start.sh
+    plan: free
+    repo: https://github.com/CAU-Capstone2-TeamPJ/pythonserver
+    branch: deploy
+    autoDeploy: true
