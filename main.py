@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from analyze_with_gpt import run_pipeline
-from extract_movie import extract_all_info_from_movie
+from analyze_with_gpt import run_pipeline, get_blogs_from_local_crawler
 
 app = FastAPI()
 
@@ -54,7 +53,7 @@ class FilmingLocationResponseDto(BaseModel):
 
 @app.post("/movies", response_model=FilmingLocationResponseDto)
 def get_filming_locations(request: MovieInfoRequestDto):
-    all_blogs = extract_all_info_from_movie(request.title, max_results=30)
+    all_blogs = get_blogs_from_local_crawler(request.title, max_results=30)
     raw_locations = run_pipeline(all_blogs, request.title, save_to_file=False)
     locations = convert_to_location_info(raw_locations)
     return FilmingLocationResponseDto(movieId=request.id, locations=locations)

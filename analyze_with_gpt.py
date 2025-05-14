@@ -4,11 +4,30 @@ from dotenv import load_dotenv
 import json
 import re
 from typing import List, Dict
+import requests
 
 # 환경변수 로딩
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
+
+def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> list[dict]:
+    """
+    로컬 크롤링 서버(ngrok 통해 열림)에 요청하여 영화 블로그 본문들을 받아옴
+    """
+    ngrok_url = " https://1638-1-230-74-161.ngrok-free.app/crawl"  # 네 ngrok 주소로 교체
+    payload = {
+        "title": movie_title,
+        "max_results": max_results
+    }
+
+    try:
+        response = requests.post(ngrok_url, json=payload, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"[ERROR] 크롤링 서버 요청 실패: {e}")
+        return []
 
 # 초기 프롬프트 불러오기
 with open("초기_프롬프트.txt", "r", encoding="utf-8") as f:
@@ -110,12 +129,6 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    from extract_movie import extract_all_info_from_movie
-
     movie_title = input("🎬 영화 제목 입력: ")
-    all_blogs = extract_all_info_from_movie(movie_title, max_results=50)
-
-    final_output = run_pipeline(all_blogs,movie_title)
-
-    print("\n📌 최종 결과:")
-    print(final_output)
+    all_blogs = get_blogs_from_local_crawler(movie_title, max_results=50)
+    final_output = run_pipeline(all_blogs, movie_title)

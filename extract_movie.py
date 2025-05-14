@@ -30,11 +30,13 @@ def get_blog_urls_with_selenium(movie_title, max_results=50):
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.binary_location = "/usr/bin/google-chrome"
 
-    driver = webdriver.Chrome(options=options)
+    # ✅ 로컬용 크롬 드라이버 경로 설정
+    chrome_driver_path = "C:/Users/keiro/moviecrawling/chromedriver-win64/chromedriver.exe"
+    service = Service(executable_path=chrome_driver_path)
 
+    driver = webdriver.Chrome(service=service, options=options)
+    
     blog_links = []
     start = 1
     while len(blog_links) < max_results:
