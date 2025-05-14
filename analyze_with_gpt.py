@@ -10,7 +10,11 @@ import requests
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
-ngrok_url = os.getenv("NGROK_URL") + "/crawl"
+ngrok_base = os.getenv("NGROK_URL")
+if not ngrok_base:
+    raise RuntimeError("NGROK_URL 환경변수가 설정되지 않았습니다.")
+ngrok_url = ngrok_base.rstrip("/") + "/crawl"
+
 
 def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> list[dict]:
     """
