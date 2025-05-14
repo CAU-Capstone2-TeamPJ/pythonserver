@@ -6,8 +6,15 @@ __pycache__/
 # Virtual environment
 .venv/
 env/
+.env
 
 # Large files
 *.dll
 *.lib
 Lib/
+
+# 가상환경 및 바이너리 제외
+Scripts/
+*.exe
+*.pyc
+__pycache__/

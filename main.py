@@ -1,36 +1,39 @@
-# main.py
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List
+from analyze_with_gpt import run_pipeline
+from extract_movie import extract_all_info_from_movie
 
 app = FastAPI()
 
-# 요청 body 스키마 정의
-class MovieRequest(BaseModel):
+class MovieInfoRequestDto(BaseModel):
+    id: int
     title: str
     director: str
-    year: int
+    releaseDate: str
 
-@app.post("/movie/locations")
-async def get_movie_locations(request: MovieRequest):
-    # 예시 결과 (실제로는 여기서 크롤링 + 분석)
-    result_table = {
-        "movie": {
-            "title": request.title,
-            "director": request.director,
-            "year": request.year,
-            "locations": [
-                {
-                    "장소명": "자하문 터널 계단",
-                    "설명": "기택 가족이 폭우 속에서 집으로 내려가는 상징적인 장면",
-                    "주소": "서울 종로구 자하문로 219",
-                    "언급 블로그 수": 6,
-                    "위도": 37.5945,
-                    "경도": 126.9623,
-                    "키워드": ["포토스팟", "관광", "문화"]
-                }
-                # 여기에 다른 장소들도 추가됨
-            ]
-        }
-    }
-    return result_table
+class LocationInfo(BaseModel):
+    name: str
+    country: str
+    description: str
+    nearbyKeywords: List[str]
+    recommendKeywords: List[str]
+    latitude: float
+    longitude: float
+    address: str
+    mentionRate: float
+    mentionCount: int
+
+class FilmingLocationResponseDto(BaseModel):
+    movieId: int
+    locations: List[LocationInfo]
+
+@app.post("/movies", response_model=FilmingLocationResponseDto)
+def get_filming_locations(request: MovieInfoRequestDto):
+    all_blogs = extract_all_info_from_movie(request.title, max_results=30)
+    locations = run_pipeline(all_blogs, request.title, save_to_file=False)
+    return FilmingLocationResponseDto(movieId=request.id, locations=locations)
+
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok"}

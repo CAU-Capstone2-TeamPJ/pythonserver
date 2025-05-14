@@ -165,19 +165,7 @@ def preprocess_text(main_text, ocr_text):
     text = main_text + "\n" + ocr_text
     return re.sub(r"\s+", " ", text).strip()
 
-# ✅ 장소 및 주소 추출
-def extract_location_info(text):
-    entities = ner(text)
-    location_names = [e['word'] for e in entities if e['entity_group'] == 'LOC']
 
-    # ✅ 더 정밀한 전체 주소 정규표현식
-    address_pattern = r'(?:서울|부산|대전|광주|대구|인천|수원|제주|경기|강원|충북|충남|전북|전남|경북|경남)[^\n]{5,50}'
-    addresses = re.findall(address_pattern, text)
-
-    # ✅ 주소 후처리 (쓸데없는 꼬리 제거)
-    address_cleaned = [re.sub(r'(제공|블로그|사진|문의|클릭).*$', '', addr) for addr in addresses]
-
-    return list(set(location_names)), list(set(address_cleaned))
 
 # ✅ 메인 실행 파이프라인
 def extract_all_info_from_movie(movie_title, max_results=50):
@@ -197,14 +185,10 @@ def extract_all_info_from_movie(movie_title, max_results=50):
             body, images = extract_body_text(driver, url)
             ocr_text = extract_text_from_images(images)
             full_text = preprocess_text(body, ocr_text)
-            locs, addrs = extract_location_info(full_text)
 
             results.append({
                 "url": url,
-                "본문 요약": body,
-                "이미지 OCR": ocr_text,
-                "장소명": locs,
-                "주소": addrs
+                "본문": full_text
             })
         except Exception as e:
             print(f"[ERROR] {url}: {e}")
@@ -221,7 +205,4 @@ if __name__ == "__main__":
     print("\n📌 최종 추출 결과:")
     for i, info in enumerate(infos, 1):
         print(f"\n[{i}] 🔗 {info['url']}")
-        print(f"   📖 본문 요약: {info['본문 요약']}")
-        print(f"   🖼️ OCR 텍스트: {info['이미지 OCR']}")
-        print(f"   🗺️ 장소명: {info['장소명']}")
-        print(f"   📍 주소: {info['주소']}")
+        print(f"   📖 본문: {info['본문']}")
