@@ -3,10 +3,14 @@ services:
     name: moviecrawling-pythonserver
     runtime: python
     buildCommand: |
-      apt-get update && apt-get install -y wget unzip gnupg ca-certificates fonts-nanum
-      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      apt install -y ./google-chrome-stable_current_amd64.deb
-      CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\\.\d+\\.\d+\\.\d+')
+      apt-get update
+      apt-get install -y wget unzip curl gnupg ca-certificates fonts-nanum
+      curl -sSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
+      echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update
+      apt-get install -y google-chrome-stable
+      ln -s /usr/bin/google-chrome-stable /usr/bin/google-chrome
+      CHROME_VERSION=$(google-chrome-stable --version | grep -oP '\\d+\\.\\d+\\.\\d+\\.\\d+')
       wget https://chromedriver.storage.googleapis.com/$CHROME_VERSION/chromedriver_linux64.zip
       unzip chromedriver_linux64.zip
       mv chromedriver /usr/local/bin/chromedriver
