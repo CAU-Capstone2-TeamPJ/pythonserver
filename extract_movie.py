@@ -30,8 +30,10 @@ def get_blog_urls_with_selenium(movie_title, max_results=50):
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    service = Service("C:/Users/keiro/moviecrawling/chromedriver-win64/chromedriver.exe")
-    driver = webdriver.Chrome(service=service, options=options)
+    options.add_argument("--disable-dev-shm-usage")
+    options.binary_location = "/usr/bin/google-chrome"
+
+    driver = webdriver.Chrome(options=options)
 
     blog_links = []
     start = 1
