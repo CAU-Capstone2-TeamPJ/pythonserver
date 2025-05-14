@@ -66,6 +66,14 @@ def filter_result_table_to_json(table_text: str) -> list:
         print("❌ JSON 파싱 실패. 다음 내용을 확인하세요:\n", clean_text)
         return []
 
+def compute_mention_rate(json_list: List[Dict], total_urls: int) -> List[Dict]:
+    """
+    mentionRate 필드를 추가
+    """
+    for item in json_list:
+        count = int(item.get("언급 블로그 수", 1))
+        item["mentionRate"] = round(count / total_urls, 4) if total_urls > 0 else 0.0
+    return json_list
 
 def process_single_blog(blog_text: str, accumulated_text: str, movie_title: str):
     messages = [
@@ -90,6 +98,7 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
         accumulated_result = updated_result
 
     filtered_json = filter_result_table_to_json(accumulated_result)
+    final_json = compute_mention_rate(filtered_json, total_urls=len(all_blogs))
 
     if save_to_file:
         output_path = f"{movie_title}_result.json"

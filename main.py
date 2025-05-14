@@ -24,6 +24,30 @@ class LocationInfo(BaseModel):
     mentionRate: float
     mentionCount: int
 
+def to_list(value):
+    if isinstance(value, list):
+        return value
+    elif isinstance(value, str):
+        return [x.strip() for x in value.split(',')]
+    return []
+
+def convert_to_location_info(raw_data: List[dict]) -> List[LocationInfo]:
+    result = []
+    for item in raw_data:
+        result.append(LocationInfo(
+            name=item.get("장소명", ""),
+            country="대한민국",
+            description= item.get("설명", ""),
+            nearbyKeywords= to_list(item.get("추가정보", [])),
+            recommendKeywords= to_list(item.get("키워드", [])),
+            latitude=float(item.get("latitude", 0.0)) if item.get("latitude") else 0.0,
+            longitude=float(item.get("longitude", 0.0)) if item.get("longitude") else 0.0,
+            address=item.get("주소", ""),
+            mentionRate=float(item.get("mentionRate", 0.0)),
+            mentionCount=int(item.get("언급 블로그 수", 1))
+        ))
+    return result
+
 class FilmingLocationResponseDto(BaseModel):
     movieId: int
     locations: List[LocationInfo]
@@ -31,7 +55,8 @@ class FilmingLocationResponseDto(BaseModel):
 @app.post("/movies", response_model=FilmingLocationResponseDto)
 def get_filming_locations(request: MovieInfoRequestDto):
     all_blogs = extract_all_info_from_movie(request.title, max_results=30)
-    locations = run_pipeline(all_blogs, request.title, save_to_file=False)
+    raw_locations = run_pipeline(all_blogs, request.title, save_to_file=False)
+    locations = convert_to_location_info(raw_locations)
     return FilmingLocationResponseDto(movieId=request.id, locations=locations)
 
 @app.get("/healthz")
