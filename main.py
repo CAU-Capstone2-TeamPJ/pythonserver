@@ -45,7 +45,7 @@ def convert_to_location_info(raw_data: List[dict]) -> List[LocationInfo]:
             address=item.get("주소", ""),
             mentionRate=float(item.get("mentionRate", 0.0)),
             mentionCount=int(item.get("언급 블로그 수", 1)),
-            durationtime = float(item.get("체류시간", 0.0))
+            durationTime = float(item.get("체류시간", 0.0))
         ))
     return result
 
