@@ -27,7 +27,7 @@ def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> lis
     }
 
     try:
-        response = requests.post(ngrok_url, json=payload, timeout=30)
+        response = requests.post(ngrok_url, json=payload, timeout=1200)
         response.raise_for_status()
         return response.json()
     except Exception as e:
