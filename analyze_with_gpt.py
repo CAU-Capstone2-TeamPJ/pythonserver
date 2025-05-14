@@ -10,12 +10,13 @@ import requests
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
+ngrok_url = os.getenv("NGROK_URL") + "/crawl"
 
 def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> list[dict]:
     """
     로컬 크롤링 서버(ngrok 통해 열림)에 요청하여 영화 블로그 본문들을 받아옴
     """
-    ngrok_url = " https://1638-1-230-74-161.ngrok-free.app/crawl"  # 네 ngrok 주소로 교체
+
     payload = {
         "title": movie_title,
         "max_results": max_results
