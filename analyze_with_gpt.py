@@ -126,7 +126,7 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
     final_json = compute_mention_rate(filtered_json, total_urls=len(all_blogs))
 
     print("🔥 GPT가 만든 테이블:")
-    print(accumulated_result)  # ← 이거 추가해
+    print(accumulated_result)
 
     if save_to_file:
         output_path = f"{movie_title}_result.json"

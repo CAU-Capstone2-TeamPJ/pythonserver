@@ -22,6 +22,7 @@ class LocationInfo(BaseModel):
     address: str
     mentionRate: float
     mentionCount: int
+    durationTime: float
 
 def to_list(value):
     if isinstance(value, list):
@@ -43,7 +44,8 @@ def convert_to_location_info(raw_data: List[dict]) -> List[LocationInfo]:
             longitude=float(item.get("longitude", 0.0)) if item.get("longitude") else 0.0,
             address=item.get("주소", ""),
             mentionRate=float(item.get("mentionRate", 0.0)),
-            mentionCount=int(item.get("언급 블로그 수", 1))
+            mentionCount=int(item.get("언급 블로그 수", 1)),
+            durationtime = float(item.get("체류시간", 0.0))
         ))
     return result
 
