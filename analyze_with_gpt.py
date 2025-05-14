@@ -3,6 +3,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 import re
+from typing import List, Dict
 
 # 환경변수 로딩
 load_dotenv()
