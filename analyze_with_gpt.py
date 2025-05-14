@@ -125,6 +125,9 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
     filtered_json = filter_result_table_to_json(accumulated_result)
     final_json = compute_mention_rate(filtered_json, total_urls=len(all_blogs))
 
+    print("🔥 GPT가 만든 테이블:")
+    print(accumulated_result)  # ← 이거 추가해
+
     if save_to_file:
         output_path = f"{movie_title}_result.json"
         with open(output_path, "w", encoding="utf-8") as f:
@@ -134,6 +137,7 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    movie_title = input("🎬 영화 제목 입력: ")
-    all_blogs = get_blogs_from_local_crawler(movie_title, max_results=50)
-    final_output = run_pipeline(all_blogs, movie_title)
+    blogs = get_blogs_from_local_crawler("기생충", max_results=3)
+    final_output = run_pipeline(blogs, "기생충")
+    print("\n📦 최종 결과:")
+    print(final_output)

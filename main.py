@@ -53,7 +53,9 @@ class FilmingLocationResponseDto(BaseModel):
 
 @app.post("/movies", response_model=FilmingLocationResponseDto)
 def get_filming_locations(request: MovieInfoRequestDto):
+    def get_filming_locations(request: MovieInfoRequestDto):
     all_blogs = get_blogs_from_local_crawler(request.title, max_results=30)
+    print(f"✅ 받은 블로그 수: {len(all_blogs)}")  # 여기 추가
     raw_locations = run_pipeline(all_blogs, request.title, save_to_file=False)
     locations = convert_to_location_info(raw_locations)
     return FilmingLocationResponseDto(movieId=request.id, locations=locations)
