@@ -51,7 +51,7 @@ def clean_json_text(raw: str) -> str:
 def filter_result_table_to_json(table_text: str) -> list:
     """
     OpenAI에게 마크다운 표를 전달하여:
-    - 주소가 불분명하고 언급 블로그 수가 1회인 항목 제거
+    - 주소가 불분명한 항목 제거
     - 위도/경도 칼럼을 빈 문자열로 추가
     - 결과를 JSON 리스트로 출력
     """
@@ -136,7 +136,8 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    blogs = get_blogs_from_local_crawler("기생충", max_results=3)
-    final_output = run_pipeline(blogs, "기생충")
+    blogs = get_blogs_from_local_crawler("부산행", max_results=50)
+    final_output = run_pipeline(blogs, "부산행")
     print("\n📦 최종 결과:")
     print(final_output)
+    print(len(final_output))

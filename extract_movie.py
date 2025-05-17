@@ -21,9 +21,24 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
+
+# ✅ 스크롤 내리는 함수
+def scroll_to_bottom(driver, pause_time=1.0):
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        # 스크롤 아래로
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(pause_time)
+
+        # 스크롤 후 높이 확인
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break  # 더 이상 안 내려감
+        last_height = new_height
+        
 # ✅ 블로그 URL 크롤링 함수
 def get_blog_urls_with_selenium(movie_title, max_results=50):
-    query = f"{movie_title} 영화 촬영지"
+    query = f"{movie_title} 촬영지"
     encoded_query = urllib.parse.quote(query)
 
     options = Options()
@@ -45,6 +60,8 @@ def get_blog_urls_with_selenium(movie_title, max_results=50):
         driver.get(url)
         time.sleep(3)
 
+        scroll_to_bottom(driver, pause_time=1.5)
+        
         elements = driver.find_elements(By.CSS_SELECTOR, "a.link_tit")
         if not elements:
             print("[WARN] 결과 없음, 종료")
