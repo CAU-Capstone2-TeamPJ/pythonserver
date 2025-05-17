@@ -34,7 +34,7 @@ def convert_to_location_info(raw_data: List[dict]) -> List[LocationInfo]:
     for item in raw_data:
         result.append(LocationInfo(
             name=item.get("장소명", ""),
-            country=("국가",""),
+            country=item.get("국가",""),
             description= item.get("설명", ""),
             nearbyKeywords= to_list(item.get("추가정보", [])),
             recommendKeywords= to_list(item.get("키워드", [])),

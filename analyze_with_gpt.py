@@ -136,8 +136,8 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    blogs = get_blogs_from_local_crawler("부산행", max_results=50)
-    final_output = run_pipeline(blogs, "부산행")
+    blogs = get_blogs_from_local_crawler("범죄도시2", max_results=50)
+    final_output = run_pipeline(blogs, "범죄도시2")
     print("\n📦 최종 결과:")
     print(final_output)
     print(len(final_output))
