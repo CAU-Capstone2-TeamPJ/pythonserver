@@ -131,7 +131,7 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
     for i, blog_entry in enumerate(all_blogs, 1):
         blog_text = blog_entry["본문"]
 
-        if len(blog_text) > 5000:
+        if len(blog_text) > 10000:
             print(f"[SKIP] {i}번 블로그 본문이 너무 깁니다. ({len(blog_text)}자) → 처리 제외됨")
             continue  # 이 블로그는 GPT 처리에서 제외
         
@@ -153,8 +153,8 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    blogs = get_blogs_from_local_crawler("부산행", max_results=50)
-    final_output = run_pipeline(blogs, "부산행")
+    blogs = get_blogs_from_local_crawler("기생충", max_results=50)
+    final_output = run_pipeline(blogs, "기생충")
     print("\n📦 최종 결과:")
     print(final_output)
     print(len(final_output))
