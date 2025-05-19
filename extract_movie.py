@@ -12,6 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 import urllib.parse
 
+
 # ✅ Tesseract 경로 설정
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -21,6 +22,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
+# ✅ URL 정규화 함수 (파라미터 제거)
+def normalize_url(url):
+    parsed = urlparse(url)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
 
 # ✅ 스크롤 내리는 함수
 def scroll_to_bottom(driver, pause_time=1.0):
@@ -36,55 +41,90 @@ def scroll_to_bottom(driver, pause_time=1.0):
             break  # 더 이상 안 내려감
         last_height = new_height
         
-# ✅ 블로그 URL 크롤링 함수
-def get_blog_urls_with_selenium(movie_title, max_results=50):
-    query = f"{movie_title} 촬영지"
-    encoded_query = urllib.parse.quote(query)
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, urlunparse, quote
+import time
 
+# ✅ URL 정규화 함수 (파라미터 제거)
+def normalize_url(url):
+    parsed = urlparse(url)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
+
+# ✅ 스크롤 내리기 (JS 기반 무한 스크롤 지원)
+def scroll_to_bottom(driver, pause_time=1.5):
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(pause_time)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+# ✅ 블로그 URL 크롤링 (다중 키워드 + 중복 제거 포함)
+def get_blog_urls_with_selenium(movie_title, max_results=50):
+    keyword_suffixes = ["촬영지", "촬영 장소", "배경지", "성지순례", "영화 장소"]
+    all_links = []
+    normalized_links = set()
+
+    # ✅ 크롬 드라이버 설정
     options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-
-    # ✅ 로컬용 크롬 드라이버 경로 설정
     chrome_driver_path = "C:/Users/keiro/moviecrawling/chromedriver-win64/chromedriver.exe"
     service = Service(executable_path=chrome_driver_path)
-
     driver = webdriver.Chrome(service=service, options=options)
-    
-    blog_links = []
-    start = 1
-    while len(blog_links) < max_results:
-        url = f"https://search.naver.com/search.naver?where=view&query={encoded_query}&start={start}"
-        print(f"[INFO] 검색 페이지: {url}")
-        driver.get(url)
-        time.sleep(3)
 
-        scroll_to_bottom(driver, pause_time=1.5)
-        
-        elements = driver.find_elements(By.CSS_SELECTOR, "a.link_tit")
-        if not elements:
-            print("[WARN] 결과 없음, 종료")
-            break
+    try:
+        for suffix in keyword_suffixes:
+            query = f"{movie_title} {suffix}"
+            encoded_query = quote(query)
+            print(f"\n[🔍] 검색어: {query}")
 
-        before = len(blog_links)
+            start = 1
+            while len(all_links) < max_results:
+                url = f"https://search.naver.com/search.naver?where=view&query={encoded_query}&start={start}"
+                print(f"[INFO] 검색 페이지: {url}")
+                driver.get(url)
+                time.sleep(2)
+                scroll_to_bottom(driver)
 
-        for e in elements:
-            href = e.get_attribute("href")
-            if href and href not in blog_links:
-                blog_links.append(href)
-            if len(blog_links) >= max_results:
+                elements = driver.find_elements(By.CSS_SELECTOR, "a.link_tit")
+                if not elements:
+                    print("[WARN] 결과 없음, 다음 키워드로")
+                    break
+
+                before = len(all_links)
+                for e in elements:
+                    href = e.get_attribute("href")
+                    normalized = normalize_url(href)
+
+                    if href and normalized not in normalized_links:
+                        normalized_links.add(normalized)
+                        all_links.append(href)
+                    if len(all_links) >= max_results:
+                        break
+
+                after = len(all_links)
+                if after == before:
+                    print("[STOP] 새로운 링크 없음 → 다음 키워드로")
+                    break
+
+                start += 10
+
+            if len(all_links) >= max_results:
+                print("[✅] 최대 개수 도달")
                 break
 
-        after = len(blog_links)
-        if after == before:
-            print("[STOP] 새로운 링크 없음 → 종료")
-            break
+    finally:
+        driver.quit()
 
-        start += 10
-
-    driver.quit()
-    return blog_links
+    return all_links[:max_results]
 
 # ✅ 정제 함수 (본문용)
 def clean_text(text):
