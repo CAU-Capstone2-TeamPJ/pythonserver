@@ -27,12 +27,23 @@ def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> lis
     }
 
     try:
-        response = requests.post(ngrok_url, json=payload, timeout=1200)
+        response = requests.post(ngrok_url, json=payload, timeout=1800)
         response.raise_for_status()
         return response.json()
+    
+    except requests.exceptions.Timeout:
+        print(f"[TIMEOUT] ⏱ 크롤링 서버 응답 시간 초과: {ngrok_url}")
+
+    except requests.exceptions.SSLError as ssl_err:
+        print(f"[SSL ERROR] 🔐 SSL 연결 실패: {ssl_err}")
+
+    except requests.exceptions.RequestException as req_err:
+        print(f"[REQUEST ERROR] ❌ 요청 중 문제 발생: {req_err}")
+
     except Exception as e:
-        print(f"[ERROR] 크롤링 서버 요청 실패: {e}")
-        return []
+        print(f"[ERROR] ❗ 알 수 없는 예외 발생: {e}")
+
+    return []
 
 # 초기 프롬프트 불러오기
 with open("초기_프롬프트.txt", "r", encoding="utf-8") as f:
@@ -118,7 +129,13 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
     accumulated_result = ""  # 중요: API 요청마다 초기화
 
     for i, blog_entry in enumerate(all_blogs, 1):
-        updated_result = process_single_blog(blog_entry["본문"], accumulated_result, movie_title)
+        blog_text = blog_entry["본문"]
+
+        if len(blog_text) > 5000:
+            print(f"[SKIP] {i}번 블로그 본문이 너무 깁니다. ({len(blog_text)}자) → 처리 제외됨")
+            continue  # 이 블로그는 GPT 처리에서 제외
+        
+        updated_result = process_single_blog(blog_text, accumulated_result, movie_title)
         accumulated_result = updated_result
 
     filtered_json = filter_result_table_to_json(accumulated_result)
@@ -136,8 +153,8 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    blogs = get_blogs_from_local_crawler("범죄도시2", max_results=50)
-    final_output = run_pipeline(blogs, "범죄도시2")
+    blogs = get_blogs_from_local_crawler("부산행", max_results=50)
+    final_output = run_pipeline(blogs, "부산행")
     print("\n📦 최종 결과:")
     print(final_output)
     print(len(final_output))

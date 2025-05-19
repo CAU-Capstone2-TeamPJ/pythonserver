@@ -8,7 +8,7 @@ app = FastAPI()
 
 class CrawlRequest(BaseModel):
     title: str
-    max_results: int = 30  # 기본값 설정
+    max_results: int = 50  # 기본값 설정
 
 @app.post("/crawl")
 def crawl_movie_info(request: CrawlRequest):
