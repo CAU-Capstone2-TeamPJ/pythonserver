@@ -16,7 +16,7 @@ if not ngrok_base:
 ngrok_url = ngrok_base.rstrip("/") + "/crawl"
 
 
-def get_blogs_from_local_crawler(movie_title: str, max_results: int = 50) -> list[dict]:
+def get_blogs_from_local_crawler(movie_title: str, max_results: int = 30) -> list[dict]:
     """
     로컬 크롤링 서버(ngrok 통해 열림)에 요청하여 영화 블로그 본문들을 받아옴
     """
@@ -155,8 +155,8 @@ def run_pipeline(all_blogs, movie_title, save_to_file=False):
 
 # 테스트 실행 예시
 if __name__ == "__main__":
-    blogs = get_blogs_from_local_crawler("기생충", max_results=50)
-    final_output = run_pipeline(blogs, "기생충")
+    blogs = get_blogs_from_local_crawler("중경삼림", max_results=30)
+    final_output = run_pipeline(blogs, "중경삼림")
     print("\n📦 최종 결과:")
     print(final_output)
     print(len(final_output))

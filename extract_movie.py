@@ -66,7 +66,7 @@ def scroll_to_bottom(driver, pause_time=1.5):
         last_height = new_height
 
 # ✅ 블로그 URL 크롤링 (다중 키워드 + 중복 제거 포함)
-def get_blog_urls_with_selenium(movie_title, max_results=50):
+def get_blog_urls_with_selenium(movie_title, max_results=30):
     keyword_suffixes = ["촬영지", "촬영 장소", "배경지", "성지순례", "영화 장소"]
     all_links = []
     normalized_links = set()
@@ -229,7 +229,7 @@ def preprocess_text(main_text, ocr_text):
 
 
 # ✅ 메인 실행 파이프라인
-def extract_all_info_from_movie(movie_title, max_results=50):
+def extract_all_info_from_movie(movie_title, max_results=30):
     results = []
     urls = get_blog_urls_with_selenium(movie_title, max_results=max_results)
 

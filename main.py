@@ -1,8 +1,16 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
-from analyze_with_gpt import run_pipeline, get_blogs_from_local_crawler
+from typing import List, Dict
 import logging
+import re
+import time
+import json
+import requests
+import os
+from dotenv import load_dotenv
+
+from extract_movie import extract_all_info_from_movie
+from analyze_with_gpt import run_pipeline
 
 # ✅ 로깅 설정
 logging.basicConfig(
@@ -10,6 +18,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# ✅ 환경 변수 로딩
+load_dotenv()
 
 app = FastAPI()
 
@@ -41,7 +52,7 @@ def to_list(value):
     return []
 
 # ✅ dict → LocationInfo 변환
-def convert_to_location_info(raw_data: List[dict]) -> List[LocationInfo]:
+def convert_to_location_info(raw_data: List[Dict]) -> List[LocationInfo]:
     result = []
     for item in raw_data:
         result.append(LocationInfo(
@@ -62,21 +73,21 @@ class FilmingLocationResponseDto(BaseModel):
     movieId: int
     locations: List[LocationInfo]
 
-# ✅ 주요 엔드포인트
+# ✅ 통합형 크롤링 + GPT 처리 엔드포인트
 @app.post("/movies", response_model=FilmingLocationResponseDto)
 def get_filming_locations(request: MovieInfoRequestDto):
     try:
         logger.info(f"🎬 영화 제목 수신: {request.title}")
 
-        # 블로그 수집
-        all_blogs = get_blogs_from_local_crawler(request.title, max_results=30)
+        # 1. 로컬에서 직접 블로그 크롤링
+        all_blogs = extract_all_info_from_movie(request.title, max_results=30)
         logger.info(f"✅ 받은 블로그 수: {len(all_blogs)}")
 
-        # GPT 기반 장소 분석
+        # 2. GPT로 장소 정보 추출 및 정제
         raw_locations = run_pipeline(all_blogs, request.title, save_to_file=False)
         logger.info(f"📌 GPT 파이프라인 완료 - 장소 후보 수: {len(raw_locations)}")
 
-        # 정제 후 응답 변환
+        # 3. 변환 및 응답
         locations = convert_to_location_info(raw_locations)
         logger.info(f"📦 응답으로 보낼 장소 수: {len(locations)}")
 
